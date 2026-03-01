@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>一年生マップ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+        "Yu Gothic", sans-serif;
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 45%, #fffbeb 100%);
+      color: #1f2937;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding:
+        calc(16px + env(safe-area-inset-top))
+        16px
+        calc(24px + env(safe-area-inset-bottom))
+        16px;
+    }
+
+    .card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ffedd5;
+      color: #c2410c;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .sub {
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-box {
+      min-width: 0;
+      background: #fff7ed;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat-box:nth-child(2) {
+      background: #fffbeb;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .grid-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .complete {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .cell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: none;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+      padding: 10px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      overflow: hidden;
+    }
+
+    .cell:active {
+      transform: scale(0.98);
+    }
+
+    .cell:focus-visible,
+    .reset-btn:focus-visible,
+    .modal-button:focus-visible,
+    .modal-input:focus-visible {
+      outline: 3px solid rgba(59, 130, 246, 0.35);
+      outline-offset: 2px;
+    }
+
+    .cell-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      line-height: 1.3;
+    }
+
+    .cell-text {
+      flex: 1;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 700;
+      color: #374151;
+      margin: 0;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .cell-hint {
+      font-size: 10px;
+      color: #6b7280;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .cell.completed {
+      background: #ffedd5;
+    }
+
+    .cell.opened {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .cell.opened .cell-number,
+    .cell.opened .cell-text,
+    .cell.opened .cell-hint {
+      color: #ffffff;
+    }
+
+    .hole {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+
+    .cell.opened .hole {
+      display: flex;
+    }
+
+    .hole-circle {
+      width: 54%;
+      height: 54%;
+      min-width: 48px;
+      min-height: 48px;
+      max-width: 68px;
+      max-height: 68px;
+      border-radius: 999px;
+      border: 4px dashed #ffffff;
+    }
+
+    .guide {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 12px;
+      line-height: 1.7;
+    }
+
+    ol {
+      padding-left: 18px;
+      margin: 10px 0 0 0;
+      color: #4b5563;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #f3f4f6;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: #111827;
+      border-radius: 999px;
+      transition: width 0.2s ease;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .actions-left {
+      min-width: 0;
+      flex: 1 1 180px;
+    }
+
+    .reset-btn {
+      border: none;
+      background: #111827;
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 44px;
+      flex: 0 0 auto;
+      touch-action: manipulation;
+    }
+
+    .cookie-note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.7;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      min-height: 22px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #b91c1c;
+      word-break: break-word;
+    }
+
+    .status-message.success {
+      color: #15803d;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding:
+        calc(16px + env(safe-area-inset-top))
+        16px
+        calc(16px + env(safe-area-inset-bottom))
+        16px;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 9999;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 360px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+      padding: 18px;
+    }
+
+    .modal-title {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .modal-text {
+      font-size: 14px;
+      color: #4b5563;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .modal-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .modal-input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 16px;
+      background: #ffffff;
+      color: #111827;
+      appearance: none;
+    }
+
+    .modal-error {
+      min-height: 22px;
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #b91c1c;
+      word-break: break-word;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .modal-button {
+      flex: 1 1 0;
+      min-height: 44px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      touch-action: manipulation;
+    }
+
+    .modal-button.cancel {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .modal-button.confirm {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    @media (max-width: 420px) {
+      .page {
+        padding:
+          calc(12px + env(safe-area-inset-top))
+          12px
+          calc(20px + env(safe-area-inset-bottom))
+          12px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .grid {
+        gap: 8px;
+      }
+
+      .cell {
+        border-radius: 18px;
+        padding: 8px;
+      }
+
+      .cell-text {
+        font-size: 11px;
+      }
+
+      .cell-hint {
+        font-size: 9px;
+      }
+
+      .hole-circle {
+        border-width: 3px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .reset-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="card">
+      <div class="badge">QRでアクセス</div>
+      <h1>一年生マップ</h1>
+      <p class="sub">
+        ミッションをクリアしたらタップして、穴をあけよう。9個ぜんぶ開いたらコンプリート！
+      </p>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">クリア数</div>
+          <div class="stat-value"><span id="completedCount">0</span> / 9</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">穴をあけた数</div>
+          <div class="stat-value"><span id="openedCount">0</span> / 9</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid-title">
+        <h2>ミッションマップ</h2>
+        <div id="completeBadge" class="complete">COMPLETE!</div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+      <p class="guide">
+        マスを変更するときはパスワードが必要です。1回目の変更で「クリア」、2回目の変更で「穴あけ」になります。
+      </p>
+      <div id="statusMessage" class="status-message" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2>使い方</h2>
+      <ol>
+        <li>QRコードを読み取ってサイトを開く</li>
+        <li>変更したいマスをタップする</li>
+        <li>パスワード「1234」を入力する</li>
+        <li>1回目でクリア、2回目で穴あけになる</li>
+        <li>9マス全部あいたらゴール</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <div class="actions">
+        <div class="actions-left">
+          <h2>進み具合</h2>
+          <p class="sub">オリエンや新歓イベントにも使えます。</p>
+        </div>
+        <button class="reset-btn" id="resetBtn" type="button">リセット</button>
+      </div>
+
+      <div class="progress-bar">
+        <div id="progress" class="progress"></div>
+      </div>
+
+      <p class="cookie-note">
+        このページでは進捗をクッキーに保存します。リセット時もパスワードが必要です。
+      </p>
+    </section>
+  </div>
+
+  <div
+    id="passwordModal"
+    class="modal-overlay"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div class="modal">
+      <h3 id="modalTitle" class="modal-title">パスワード入力</h3>
+      <p class="modal-text">
+        変更するにはパスワードを入力してください。
+      </p>
+
+      <label class="modal-label" for="passwordInput">パスワード</label>
+      <input
+        id="passwordInput"
+        class="modal-input"
+        type="password"
+        inputmode="numeric"
+        autocomplete="off"
+        enterkeyhint="done"
+        placeholder="4桁のパスワード"
+      />
+
+      <div id="modalError" class="modal-error" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button id="cancelModalButton" class="modal-button cancel" type="button">
+          キャンセル
+        </button>
+        <button id="confirmModalButton" class="modal-button confirm" type="button">
+          確認
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COOKIE_NAME = "ichinensei_map_state";
+    const COOKIE_DAYS = 30;
+    const EDIT_PASSWORD = "1234";
+
+    const missions = [
+      "先輩にあいさつする",
+      "学内のお気に入りスポットを見つける",
+      "サークルを1つ調べる",
+      "学食を食べる",
+      "新しい友だちに話しかける",
+      "学生証の使い方を確認する",
+      "図書館に行く",
+      "授業の教室を確認する",
+      "キャンパスで写真を1枚撮る"
+    ];
+
+    function createInitialState() {
+      const initial = [];
+
+      for (let i = 0; i < missions.length; i += 1) {
+        initial.push({
+          completed: false,
+          opened: false
+        });
+      }
+
+      return initial;
+    }
+
+    function setCookie(name, value, days) {
+      const date = new Date();
+      const millisecondsPerDay = 24 * 60 * 60 * 1000;
+      date.setTime(date.getTime() + days * millisecondsPerDay);
+
+      const expires = "expires=" + date.toUTCString();
+      const encodedValue = encodeURIComponent(value);
+
+      document.cookie =
+        name + "=" + encodedValue + "; " + expires + "; path=/; SameSite=Lax";
+    }
+
+    function getCookie(name) {
+      const target = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const cookieArray = decodedCookie.split(";");
+
+      for (let i = 0; i < cookieArray.length; i += 1) {
+        let cookie = cookieArray[i];
+
+        while (cookie.charAt(0) === " ") {
+          cookie = cookie.substring(1);
+        }
+
+        if (cookie.indexOf(target) === 0) {
+          return cookie.substring(target.length, cookie.length);
+        }
+      }
+
+      return null;
+    }
+
+    function deleteCookie(name) {
+      document.cookie =
+        name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+    }
+
+    function saveStateToCookie(state) {
+      const json = JSON.stringify(state);
+      setCookie(COOKIE_NAME, json, COOKIE_DAYS);
+    }
+
+    function isValidState(data) {
+      if (!Array.isArray(data)) {
+        return false;
+      }
+
+      if (data.length !== missions.length) {
+        return false;
+      }
+
+      for (let i = 0; i < data.length; i += 1) {
+        if (typeof data[i] !== "object" || data[i] === null) {
+          return false;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(data[i], "completed")) {
+          return false;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(data[i], "opened")) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function normalizeState(data) {
+      const normalized = [];
+
+      for (let i = 0; i < data.length; i += 1) {
+        const completed = Boolean(data[i].completed);
+        const opened = Boolean(data[i].opened);
+
+        normalized.push({
+          completed: completed,
+          opened: opened
+        });
+      }
+
+      for (let i = 0; i < normalized.length; i += 1) {
+        if (normalized[i].opened && !normalized[i].completed) {
+          normalized[i].completed = true;
+        }
+      }
+
+      return normalized;
+    }
+
+    function loadStateFromCookie() {
+      const saved = getCookie(COOKIE_NAME);
+
+      if (!saved) {
+        return createInitialState();
+      }
+
+      try {
+        const parsed = JSON.parse(saved);
+
+        if (!isValidState(parsed)) {
+          return createInitialState();
+        }
+
+        return normalizeState(parsed);
+      } catch (error) {
+        return createInitialState();
+      }
+    }
+
+    const state = loadStateFromCookie();
+
+    const grid = document.getElementById("grid");
+    const completedCount = document.getElementById("completedCount");
+    const openedCount = document.getElementById("openedCount");
+    const progress = document.getElementById("progress");
+    const completeBadge = document.getElementById("completeBadge");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    const passwordModal = document.getElementById("passwordModal");
+    const passwordInput = document.getElementById("passwordInput");
+    const modalError = document.getElementById("modalError");
+    const cancelModalButton = document.getElementById("cancelModalButton");
+    const confirmModalButton = document.getElementById("confirmModalButton");
+
+    let pendingAction = null;
+    let lastFocusedElement = null;
+
+    function showStatusMessage(message, isSuccess) {
+      statusMessage.textContent = message;
+
+      if (isSuccess) {
+        statusMessage.classList.add("success");
+      } else {
+        statusMessage.classList.remove("success");
+      }
+    }
+
+    function clearStatusMessage() {
+      statusMessage.textContent = "";
+      statusMessage.classList.remove("success");
+    }
+
+    function createCellElement(item, index) {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "cell";
+      cell.setAttribute("aria-label", "MISSION " + (index + 1) + " を変更");
+
+      if (item.completed) {
+        cell.classList.add("completed");
+      }
+
+      if (item.opened) {
+        cell.classList.add("opened");
+      }
+
+      let hint = "タップでクリア";
+
+      if (item.completed && !item.opened) {
+        hint = "もう一度タップで穴あけ";
+      }
+
+      if (item.opened) {
+        hint = "穴あけ完了";
+      }
+
+      cell.innerHTML =
+        '<div class="cell-number">MISSION ' + (index + 1) + "</div>" +
+        '<div class="cell-text">' + escapeHtml(missions[index]) + "</div>" +
+        '<div class="cell-hint">' + hint + "</div>" +
+        '<div class="hole"><div class="hole-circle"></div></div>';
+
+      cell.addEventListener("click", function () {
+        openPasswordModal({
+          type: "cell",
+          index: index
+        }, cell);
+      });
+
+      return cell;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function updateSummary() {
+      let completed = 0;
+      let opened = 0;
+
+      for (let i = 0; i < state.length; i += 1) {
+        if (state[i].completed) {
+          completed += 1;
+        }
+
+        if (state[i].opened) {
+          opened += 1;
+        }
+      }
+
+      completedCount.textContent = String(completed);
+      openedCount.textContent = String(opened);
+      progress.style.width = String((opened / missions.length) * 100) + "%";
+
+      if (opened === missions.length) {
+        completeBadge.style.display = "inline-flex";
+      } else {
+        completeBadge.style.display = "none";
+      }
+    }
+
+    function render() {
+      grid.innerHTML = "";
+
+      for (let i = 0; i < state.length; i += 1) {
+        const cell = createCellElement(state[i], i);
+        grid.appendChild(cell);
+      }
+
+      updateSummary();
+    }
+
+    function update() {
+      saveStateToCookie(state);
+      render();
+    }
+
+    function openPasswordModal(action, focusedElement) {
+      pendingAction = action;
+      lastFocusedElement = focusedElement || document.activeElement;
+
+      modalError.textContent = "";
+      passwordInput.value = "";
+      passwordModal.classList.add("show");
+      passwordModal.setAttribute("aria-hidden", "false");
+
+      window.setTimeout(function () {
+        passwordInput.focus();
+      }, 0);
+    }
+
+    function closePasswordModal() {
+      passwordModal.classList.remove("show");
+      passwordModal.setAttribute("aria-hidden", "true");
+      modalError.textContent = "";
+      passwordInput.value = "";
+      pendingAction = null;
+
+      if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+        lastFocusedElement.focus();
+      }
+    }
+
+    function applyPendingAction() {
+      if (!pendingAction) {
+        return;
+      }
+
+      if (pendingAction.type === "cell") {
+        const index = pendingAction.index;
+
+        if (!state[index].completed) {
+          state[index].completed = true;
+          showStatusMessage("MISSION " + (index + 1) + " をクリアにしました。", true);
+        } else if (!state[index].opened) {
+          state[index].opened = true;
+          showStatusMessage("MISSION " + (index + 1) + " を穴あけにしました。", true);
+        } else {
+          showStatusMessage("このマスはすでに穴あけ完了です。", false);
+        }
+
+        update();
+      }
+
+      if (pendingAction.type === "reset") {
+        for (let i = 0; i < state.length; i += 1) {
+          state[i].completed = false;
+          state[i].opened = false;
+        }
+
+        deleteCookie(COOKIE_NAME);
+        render();
+        showStatusMessage("進捗をリセットしました。", true);
+      }
+
+      closePasswordModal();
+    }
+
+    function confirmPassword() {
+      const enteredPassword = passwordInput.value;
+
+      if (enteredPassword !== EDIT_PASSWORD) {
+        modalError.textContent = "パスワードが違います。";
+        showStatusMessage("パスワードが違うため変更できませんでした。", false);
+        passwordInput.focus();
+        passwordInput.select();
+        return;
+      }
+
+      clearStatusMessage();
+      applyPendingAction();
+    }
+
+    resetBtn.addEventListener("click", function () {
+      openPasswordModal({
+        type: "reset"
+      }, resetBtn);
+    });
+
+    confirmModalButton.addEventListener("click", function () {
+      confirmPassword();
+    });
+
+    cancelModalButton.addEventListener("click", function () {
+      showStatusMessage("変更をキャンセルしました。", false);
+      closePasswordModal();
+    });
+
+    passwordInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        confirmPassword();
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        showStatusMessage("変更をキャンセルしました。", false);
+        closePasswordModal();
+      }
+    });
+
+    passwordModal.addEventListener("click", function (event) {
+      if (event.target === passwordModal) {
+        showStatusMessage("変更をキャンセルしました。", false);
+        closePasswordModal();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && passwordModal.classList.contains("show")) {
+        event.preventDefault();
+        showStatusMessage("変更をキャンセルしました。", false);
+        closePasswordModal();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
