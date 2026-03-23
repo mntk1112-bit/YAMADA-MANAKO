@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>初心者ミッション</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      background: linear-gradient(180deg, #fff8fb 0%, #fffdf7 100%);
+      color: #333;
+      min-height: 100%;
+    }
+
+    body {
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    .header {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      margin-bottom: 16px;
+      border: 2px solid #ffd9e8;
+    }
+
+    .title {
+      font-size: 28px;
+      line-height: 1.3;
+      margin: 0 0 8px 0;
+      color: #ff5f9e;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      margin: 0;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .notice {
+      margin-top: 12px;
+      display: inline-block;
+      background: #fff2f7;
+      color: #ff4f93;
+      border: 1px solid #ffc5dc;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 12px 0;
+      color: #ff6aa8;
+      padding-left: 8px;
+      border-left: 6px solid #ffb6d2;
+    }
+
+    .mission-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .mission-card {
+      position: relative;
+      background: #fff;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+      border: 2px solid #ffe4ef;
+      overflow: hidden;
+    }
+
+    .mission-card.completed {
+      background: linear-gradient(180deg, #fff 0%, #fff7fb 100%);
+      border-color: #ff9fc8;
+    }
+
+    .mission-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .mission-number {
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff84b7, #ffc2db);
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(255, 132, 183, 0.3);
+    }
+
+    .mission-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .mission-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #444;
+      margin: 0 0 6px 0;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .mission-desc {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .mission-links {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .link-btn,
+    .stamp-btn,
+    .reset-btn {
+      appearance: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+    }
+
+    .link-btn:active,
+    .stamp-btn:active,
+    .reset-btn:active {
+      transform: scale(0.98);
+    }
+
+    .link-btn {
+      background: #fff3f8;
+      color: #ff4f93;
+      border: 1px solid #ffc5dc;
+    }
+
+    .stamp-btn {
+      background: linear-gradient(135deg, #ff77ad, #ffb9d5);
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(255, 119, 173, 0.28);
+    }
+
+    .stamp-btn.completed {
+      background: linear-gradient(135deg, #95d68a, #c8efc0);
+      color: #2d6b24;
+      box-shadow: 0 6px 14px rgba(149, 214, 138, 0.28);
+    }
+
+    .stamp-area {
+      margin-top: 12px;
+      min-height: 64px;
+      position: relative;
+    }
+
+    .cute-stamp {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #fff0f7;
+      border: 2px dashed #ff9fc8;
+      color: #ff4f93;
+      border-radius: 16px;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-weight: 800;
+      transform: rotate(-6deg);
+      box-shadow: 0 6px 14px rgba(255, 159, 200, 0.18);
+      user-select: none;
+    }
+
+    .cute-stamp::before {
+      content: "🌸";
+      font-size: 18px;
+    }
+
+    .cute-stamp::after {
+      content: "🐻";
+      font-size: 18px;
+    }
+
+    .locked-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .footer-box {
+      margin-top: 24px;
+      background: #fff;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+      border: 2px solid #ffe4ef;
+    }
+
+    .progress-wrap {
+      margin-bottom: 12px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 14px;
+      background: #ffeaf2;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ff7aae, #ffc1da);
+      transition: width 0.25s ease;
+    }
+
+    .progress-text {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+      font-weight: 700;
+    }
+
+    .reset-btn {
+      background: #fff7d9;
+      color: #8a6b00;
+      border: 1px solid #f1da82;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      .header {
+        padding: 18px 14px;
+        border-radius: 20px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+
+      .section-title {
+        font-size: 20px;
+      }
+
+      .mission-card {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .mission-number {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+      }
+
+      .mission-title {
+        font-size: 16px;
+      }
+
+      .mission-desc {
+        font-size: 13px;
+      }
+
+      .link-btn,
+      .stamp-btn,
+      .reset-btn {
+        width: 100%;
+        font-size: 14px;
+      }
+
+      .mission-links {
+        flex-direction: column;
+      }
+
+      .cute-stamp {
+        font-size: 15px;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">初心者ミッション</h1>
+      <p class="subtitle">
+        ボタンを押してミッション達成！<br>
+        スタンプはこの端末に保存されます。
+      </p>
+      <div class="notice">スタンプの変更には暗証番号「1234」が必要です</div>
+    </div>
+
+    <section class="section">
+      <h2 class="section-title">初心者ミッション</h2>
+      <div class="mission-list" id="missionList"></div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">＋Aミッション</h2>
+      <div class="mission-list" id="plusMissionList"></div>
+    </section>
+
+    <div class="footer-box">
+      <div class="progress-wrap">
+        <div class="progress-label">達成度</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">0 / 0 達成</div>
+      </div>
+
+      <button class="reset-btn" id="resetButton">スタンプを全部リセット</button>
+    </div>
+  </div>
+
+  <script>
+    const PASSWORD = "1234";
+    const STORAGE_KEY = "shiru_cafe_missions_v1";
+
+    const beginnerMissions = [
+      {
+        id: "mission1",
+        number: "1",
+        title: "スタッフに声をかける",
+        description: "まずは気軽にスタッフと話してみよう！",
+        links: []
+      },
+      {
+        id: "mission2",
+        number: "2",
+        title: "店内を見てみる",
+        description: "どんな雰囲気か、どんな掲示があるかチェック！",
+        links: []
+      },
+      {
+        id: "mission3",
+        number: "3",
+        title: "イベント情報を見てみる",
+        description: "気になるイベントがあるか見てみよう！",
+        links: []
+      },
+      {
+        id: "mission4",
+        number: "4",
+        title: "Instagramをチェックする",
+        description: "知るカフェのInstagramをのぞいてみよう！",
+        links: [
+          {
+            label: "Instagramを見る",
+            url: "https://www.instagram.com/sh"
+          }
+        ]
+      },
+      {
+        id: "mission5",
+        number: "5",
+        title: "まずここ",
+        description: "まず最初にMCSをチェックしてみよう！",
+        links: [
+          {
+            label: "MCSにとぶ",
+            url: "https://mcstudy.mynavi.jp/mem?utm_source=google&utm_medium=mcs25&utm_campaign=cpc_brand_rsa_0611&gad_source=1&gad_campaignid=21380038265&gbraid=0AAAAApbP1yfclglB5_Zgt9BFP7qlub3dW&gclid=Cj0KCQjwpv7NBhCzARIsADkIfWz14ANM2_deVOX0kC6MBabH_-MDEaAkpkEALw_wcB"
+          }
+        ]
+      },
+      {
+        id: "mission6",
+        number: "6",
+        title: "知るカフェの使い方を知る",
+        description: "スタッフにおすすめの使い方を聞いてみよう！",
+        links: []
+      }
+    ];
+
+    const plusMissions = [
+      {
+        id: "plus1",
+        number: "+A1",
+        title: "気になるイベントに応募する",
+        description: "一歩進んでイベントに応募してみよう！",
+        links: []
+      },
+      {
+        id: "plus2",
+        number: "+A2",
+        title: "友だちに知るカフェを紹介する",
+        description: "気になりそうな友だちにおすすめしてみよう！",
+        links: []
+      },
+      {
+        id: "plus3",
+        number: "+A3",
+        title: "スタッフと就活や大学生活の話をする",
+        description: "相談でも雑談でもOK！話してみよう！",
+        links: []
+      }
+    ];
+
+    const allMissions = [...beginnerMissions, ...plusMissions];
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return {};
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    let missionState = loadState();
+
+    function verifyPassword() {
+      const input = window.prompt("暗証番号を入力してください");
+      if (input === null) {
+        return false;
+      }
+      if (input !== PASSWORD) {
+        alert("暗証番号が違います");
+        return false;
+      }
+      return true;
+    }
+
+    function toggleMission(id) {
+      const ok = verifyPassword();
+      if (!ok) return;
+
+      missionState[id] = !missionState[id];
+      saveState(missionState);
+      renderAll();
+    }
+
+    function resetAll() {
+      const ok = verifyPassword();
+      if (!ok) return;
+
+      const confirmed = window.confirm("すべてのスタンプをリセットしますか？");
+      if (!confirmed) return;
+
+      missionState = {};
+      saveState(missionState);
+      renderAll();
+    }
+
+    function createLinkButton(link) {
+      const a = document.createElement("a");
+      a.className = "link-btn";
+      a.href = link.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = link.label;
+      return a;
+    }
+
+    function createMissionCard(mission) {
+      const completed = !!missionState[mission.id];
+
+      const card = document.createElement("div");
+      card.className = "mission-card" + (completed ? " completed" : "");
+
+      const top = document.createElement("div");
+      top.className = "mission-top";
+
+      const number = document.createElement("div");
+      number.className = "mission-number";
+      number.textContent = mission.number;
+
+      const content = document.createElement("div");
+      content.className = "mission-content";
+
+      const title = document.createElement("h3");
+      title.className = "mission-title";
+      title.textContent = mission.title;
+
+      const desc = document.createElement("p");
+      desc.className = "mission-desc";
+      desc.textContent = mission.description;
+
+      content.appendChild(title);
+      content.appendChild(desc);
+
+      const linksWrap = document.createElement("div");
+      linksWrap.className = "mission-links";
+
+      if (Array.isArray(mission.links)) {
+        mission.links.forEach((link) => {
+          linksWrap.appendChild(createLinkButton(link));
+        });
+      }
+
+      const stampButton = document.createElement("button");
+      stampButton.className = "stamp-btn" + (completed ? " completed" : "");
+      stampButton.textContent = completed ? "スタンプ済みを解除" : "スタンプを押す";
+      stampButton.addEventListener("click", () => toggleMission(mission.id));
+
+      linksWrap.appendChild(stampButton);
+
+      const stampArea = document.createElement("div");
+      stampArea.className = "stamp-area";
+
+      if (completed) {
+        const stamp = document.createElement("div");
+        stamp.className = "cute-stamp";
+        stamp.textContent = "よくできました！";
+        stampArea.appendChild(stamp);
+      }
+
+      const lockedNote = document.createElement("div");
+      lockedNote.className = "locked-note";
+      lockedNote.textContent = "※変更時は暗証番号が必要です";
+
+      top.appendChild(number);
+      top.appendChild(content);
+
+      card.appendChild(top);
+      card.appendChild(linksWrap);
+      card.appendChild(stampArea);
+      card.appendChild(lockedNote);
+
+      return card;
+    }
+
+    function renderMissionList(targetId, missions) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = "";
+
+      missions.forEach((mission) => {
+        container.appendChild(createMissionCard(mission));
+      });
+    }
+
+    function updateProgress() {
+      const total = allMissions.length;
+      const done = allMissions.filter((mission) => !!missionState[mission.id]).length;
+      const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+      const progressBar = document.getElementById("progressBar");
+      const progressText = document.getElementById("progressText");
+
+      progressBar.style.width = percent + "%";
+      progressText.textContent = done + " / " + total + " 達成（" + percent + "%）";
+    }
+
+    function renderAll() {
+      renderMissionList("missionList", beginnerMissions);
+      renderMissionList("plusMissionList", plusMissions);
+      updateProgress();
+    }
+
+    document.getElementById("resetButton").addEventListener("click", resetAll);
+
+    renderAll();
+  </script>
+</body>
+</html>
